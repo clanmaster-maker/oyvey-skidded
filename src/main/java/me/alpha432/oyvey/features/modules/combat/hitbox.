@@ -1,0 +1,37 @@
+package me.alpha432.oyvey.features.modules.render;
+
+import me.alpha432.oyvey.features.modules.Module;
+import me.alpha432.oyvey.event.impl.Render3DEvent;
+import me.alpha432.oyvey.util.RenderUtil;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.Box;
+
+import java.awt.*;
+
+public class PlayerHitbox extends Module {
+
+    public PlayerHitbox() {
+        super("PlayerHitbox", "Shows blue hitboxes on players", Category.RENDER, true, false, false);
+    }
+
+    @Subscribe
+    public void onRender3D(Render3DEvent event) {
+        MatrixStack matrices = event.getMatrixStack();
+
+        for (PlayerEntity player : mc.world.getPlayers()) {
+
+            // Skip you
+            if (player == mc.player) continue;
+
+            // Player hitbox
+            Box box = player.getBoundingBox()
+                    .offset(-mc.getCameraEntity().getX(),
+                            -mc.getCameraEntity().getY(),
+                            -mc.getCameraEntity().getZ());
+
+            // Blue outline hitbox
+            RenderUtil.drawBoxOutline(matrices, box, new Color(0, 0, 255, 255), 2.0f);
+        }
+    }
+}
