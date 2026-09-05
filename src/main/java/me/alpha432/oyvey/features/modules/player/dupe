@@ -1,0 +1,73 @@
+package com.example.dupe;
+
+import org.bukkit.Material;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.Map;
+
+public class DupePlugin extends JavaPlugin {
+
+    @Override
+    public void onEnable() {
+        getLogger().info("DupePlugin enabled!");
+    }
+
+    @Override
+    public boolean onCommand(
+            CommandSender sender,
+            Command command,
+            String label,
+            String[] args
+    ) {
+        if (!command.getName().equalsIgnoreCase("dupe")) {
+            return false;
+        }
+
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage("Only players can use this command.");
+            return true;
+        }
+
+        if (!player.hasPermission("dupe.use")) {
+            player.sendMessage("§cYou don't have permission to use /dupe.");
+            return true;
+        }
+
+        ItemStack held = player.getInventory().getItemInMainHand();
+
+        if (held.getType() == Material.AIR) {
+            player.sendMessage("§cYou need to hold an item.");
+            return true;
+        }
+
+        // Make a completely separate copy of the held item.
+        ItemStack duplicate = held.clone();
+
+        // Add the copy to the player's inventory.
+        Map<Integer, ItemStack> leftovers =
+                player.getInventory().addItem(duplicate);
+
+        // If the inventory was full, don't lose the duplicate.
+        if (!leftovers.isEmpty()) {
+            for (ItemStack leftover : leftovers.values()) {
+                player.getWorld().dropItemNaturally(
+                        player.getLocation(),
+                        leftover
+                );
+            }
+
+            player.sendMessage("§aDuplicated your item!");
+            player.sendMessage(
+                    "§eYour inventory was full, so the duplicate was dropped."
+            );
+        } else {
+            player.sendMessage("§aDuplicated your item!");
+        }
+
+        return true;
+    }
+}
